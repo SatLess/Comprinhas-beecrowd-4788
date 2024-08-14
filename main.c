@@ -14,6 +14,7 @@ typedef struct produto Prod;
 // Variaveis Globais
 double budgetInicial;
 double budgetAtual;
+double precoTotal = 0;
 Prod carrinho[MAX];
 int idx = 0;
 
@@ -24,7 +25,7 @@ void scanInfoRemoveProduct(char nome[101], int *qtdRemover) {
 
 void debugPrint(int idx) {
   printf("%s %d x %lf, idx %d, dinero: %lf\n", carrinho[idx].nome,
-         carrinho[idx].qtd, carrinho[idx].preco, idx, budgetAtual);
+         carrinho[idx].qtd, carrinho[idx].preco, idx, precoTotal);
 }
 
 // retorna Idx do produto
@@ -46,11 +47,12 @@ void comprarProduto() {
   scanf("%s %lf %d", nome, &preco, &qtd);
   getchar();
 
-  if (qtd * preco > budgetAtual) {
-    qtd = budgetAtual / preco;
+  //se o preco total for maior que seu orcamento, apenas incluir o maximo de itens possivel
+  if (precoTotal+(qtd * preco) > budgetInicial) {
+    qtd = (budgetInicial-precoTotal) / preco;
   }
   if (qtd > 0) {
-    budgetAtual -= qtd * preco;
+    precoTotal += qtd * preco;
   }
 
   // Primeiro, checamos se existe um mesmo produto já na lista, caso não, o
@@ -80,10 +82,12 @@ void removerProduto(char nome[], int qtdRemover) {
   }
 
   if (qtdRemover > carrinho[existe].qtd) {
-    budgetAtual += carrinho[existe].qtd * carrinho[existe].preco;
+    //Faco ressarcimento total do valor
+    precoTotal -= carrinho[existe].qtd * carrinho[existe].preco;
     carrinho[existe].qtd = 0;
   } else {
-    budgetAtual += qtdRemover * carrinho[existe].preco;
+    //Faco ressarcimento apenas dos itens removidos
+    precoTotal -= qtdRemover * carrinho[existe].preco;
     carrinho[existe].qtd -= qtdRemover;
   }
 
@@ -101,12 +105,18 @@ void atualizarPreco(){
     printf("ERRO: O produto %s nao esta no carrinho\n", nome);
     return;}
 
-  carrinho[existe].preco = precoNovo;
-  //poderia usar a funcao remover produto aqui, mas o while parece ser mais facil de lidar
-  while(budgetAtual < carrinho[existe].qtd * carrinho[existe].preco){
-//fazer
-  }
+  //Remove valor dado a ele durante a compra
+  precoTotal -= carrinho[existe].qtd*carrinho[existe].preco;
+
   
+  carrinho[existe].preco = precoNovo;
+  //Caso msm assim, o total seja maior que orçamento, diminua a qtd
+   while(precoTotal+(carrinho[existe].qtd*precoNovo) >budgetInicial){--carrinho[existe].qtd;}
+
+  //Adicione o preco certo agr
+  precoTotal += carrinho[existe].qtd*carrinho[existe].preco;
+
+  debugPrint(existe);
   
 }
 

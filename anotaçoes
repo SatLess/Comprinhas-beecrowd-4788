@@ -1,3 +1,5 @@
 Erros notados:
 
--Cria-se um produto de qtd 0 na lista; pode ger
+-Cria-se um produto de qtd 0 na lista;
+-Atualizar tem suas proprios metodos pra manipular
+o valor total e a qtd de produtos; Pode ter que lidar com 3 tipos de codigo ao mesmo tempo ao inves de 2 (remover e adicionar)
