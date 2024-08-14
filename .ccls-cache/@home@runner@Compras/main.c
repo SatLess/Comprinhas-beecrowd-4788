@@ -1,77 +1,111 @@
-#include <stdio.h>
-#include <string.h>
-#define MAX 1000
+  #include <stdio.h>
+  #include <string.h>
+  #define MAX 1000
 
-struct produto{
+  struct produto{
 
-  char nome[101];
-  int qtd;
-  double preco;
+    char nome[101];
+    int qtd;
+    double preco;
+  };
 
-};
+  typedef struct produto Prod;
 
-typedef struct produto Prod;
-
-//retorna Idx do produto
-int checarExistênciaProduto(Prod Carrinho[], char nome[101]){
-  for(int i = 0; i<MAX;i++){
-    if(strcmp(Carrinho[i].nome, nome) == 0){return  i;}
-  }
-  return -1;
-}
-
-void comprarProduto(Prod Carrinho[], int *idx, double *budget) {
-
-  char nome[101];
-  int qtd;
-  double preco;
-
-  scanf("%s %d %lf", nome, &qtd, &preco);
-
-  if (qtd * preco > *budget) {
-    qtd = *budget / preco;
-    printf("%d", qtd);
-  }
-  if (qtd > 0) {
-    *budget -= qtd * preco;
-  }
-
-  // Primeiro, checamos se existe um mesmo produto já na lista, caso não, o
-  // criamos.
-  int existe = checarExistênciaProduto(Carrinho, nome);
-
-  if (existe >= 0) {
-    Carrinho[existe].qtd += qtd;
-    printf("%s %d x %lf, idx %d, dinero: %lf\n", Carrinho[existe].nome,
-           Carrinho[existe].qtd, Carrinho[existe].preco, existe, *budget);
-    return;
-  }
-
-  Prod newProduto;
-  strcpy(Carrinho[*idx].nome, nome);
-  Carrinho[*idx].preco = preco;
-  Carrinho[*idx].qtd = qtd;
-
-  printf("%s %d x %lf, idx %d, dinero: %lf\n", Carrinho[*idx].nome,
-         Carrinho[*idx].qtd, Carrinho[*idx].preco, *idx, *budget);
-
-  ++*idx;
-}
-
-int main(void) {
-
-  int numOperações;
+  //Variaveis Globais
   double budgetInicial;
   double budgetAtual;
-  char operação;
-
   Prod carrinho[MAX];
   int idx = 0;
+  
 
-  scanf("%d %lf",&numOperações,&budgetInicial);
-  budgetAtual = budgetInicial;
-
-  for(int i = 0; i<numOperações;i++){comprarProduto(carrinho, &idx,&budgetAtual);}
-
-  return 0;
+  void debugPrint(int idx){
+    printf("%s %d x %lf, idx %d, dinero: %lf\n", carrinho[idx].nome,
+       carrinho[idx].qtd, carrinho[idx].preco, idx, budgetAtual);
   }
+
+  //retorna Idx do produto
+  int checarExistênciaProduto(char nome[101]){
+    for(int i = 0; i<MAX;i++){
+      if(strcmp(carrinho[i].nome, nome) == 0){return  i;}
+    }
+    return -1;
+  }
+
+  void comprarProduto() {
+
+    char nome[101];
+    int qtd;
+    double preco;
+
+    scanf("%s %lf %d", nome, &preco,&qtd);
+    getchar();
+
+    if (qtd * preco > budgetAtual) {
+      qtd = budgetAtual / preco;
+    }
+    if (qtd > 0) {
+      budgetAtual -= qtd * preco;
+    }
+
+    // Primeiro, checamos se existe um mesmo produto já na lista, caso não, o
+    // criamos.
+    int existe = checarExistênciaProduto(nome);
+
+    if (existe >= 0) {
+      carrinho[existe].qtd += qtd;
+      debugPrint(existe);
+      return;
+    }
+
+    Prod newProduto;
+    strcpy(carrinho[idx].nome, nome);
+    carrinho[idx].preco = preco;
+    carrinho[idx].qtd = qtd;
+    debugPrint(idx);
+    ++idx;
+  }
+
+  void removerProduto(){
+    char nome[101];
+    int qtdRemover;
+    scanf("%s %d",nome,&qtdRemover);
+    getchar();
+    int existe = checarExistênciaProduto(nome);
+    if(existe == -1){
+      printf("ERRO: O produto %s nao esta no carrinho\n",nome);
+      return;}
+
+
+    if(qtdRemover>carrinho[existe].qtd){
+      budgetAtual += carrinho[existe].qtd * carrinho[existe].preco;
+      carrinho[existe].qtd = 0;
+    }
+    else{
+      budgetAtual += qtdRemover*carrinho[existe].preco;
+      carrinho[existe].qtd -= qtdRemover;}
+  
+    debugPrint(existe);
+  }
+
+  void scanOperation(){
+    char s;
+    scanf("%c",&s);
+    getchar();
+
+    if(s=='C'){comprarProduto();}
+    if(s=='R'){removerProduto();}
+  }
+
+
+  int main(void) {
+
+    int numOperações;
+
+    scanf("%d %lf",&numOperações,&budgetInicial);
+    getchar();
+    budgetAtual = budgetInicial;
+
+    for(int i = 0; i<numOperações;i++){scanOperation();}
+
+    return 0;
+    }
